@@ -48,6 +48,6 @@ setup(
     keywords        = 'Raspberry Pi, SMBUS, i2c',
     url             = 'http://www.pimoroni.com',
     classifiers     = classifiers,
-    py_modules      = ['i2cdevice'],
+    packages        = ['i2cdevice'],
     install_requires= [ 'smbus' ]
 )
