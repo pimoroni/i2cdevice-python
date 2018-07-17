@@ -1,63 +1,41 @@
-def _byte_swap(value):
-    return (value >> 8) | ((value & 0xFF) << 8)
-
-def _mask_width(value, bitwidth=8):
+def _mask_width(value, bit_width=8):
     """Get the width of a bitwise mask
     
     ie: 0b000111 = 3
     """
-    value >>= _trailing_zeros(value, bitwidth)
+    value >>= _trailing_zeros(value, bit_width)
     return value.bit_length()
 
-def _leading_zeros(value, bitwidth=8):
-    """Count leading zeros on a binary number with a given bitwidth
+def _leading_zeros(value, bit_width=8):
+    """Count leading zeros on a binary number with a given bit_width
 
     ie: 0b0011 = 2
 
     Used for shifting around values after masking.
     """
     count = 0
-    for x in range(bitwidth):
-        if value & (1 << (bitwidth - 1)):
+    for _ in range(bit_width):
+        if value & (1 << (bit_width - 1)):
             return count
         count += 1
         value <<= 1
     return count
 
-def _trailing_zeros(value, bitwidth=8):
-    """Count trailing zeros on a binary number with a given bitwidth
+def _trailing_zeros(value, bit_width=8):
+    """Count trailing zeros on a binary number with a given bit_width
 
     ie: 0b11000 = 3
 
     Used for shifting around values after masking.
     """
     count = 0
-    for x in range(bitwidth):
+    for _ in range(bit_width):
         if value & 1:
             return count
         count += 1
         value >>= 1
     return count
 
-def _unmask(value, mask, bitwidth=16):
-    output = 0
-    shift = 0
-    for x in range(bitwidth):
-        if mask & (1 << x):
-            output |= (value & (1 << x)) >> shift
-        else:
-            shift += 1
-
-def _mask(value, mask, bitwidth=16):
-    output = 0
-    ptr = 1
-    shift = 0
-    for x in range(bitwidth):
-        if mask & (1 << x):
-            output |= (value & ptr) << shift
-            ptr <<= 1
-        else:
-            shift += 1
 
 def _int_to_bytes(value, length, endianness='big'):
     try:
@@ -110,9 +88,38 @@ class _RegisterProxy(object):
         return object.__getattribute__(self, name)
 
 
+class Register():
+    """Store information about an i2c register"""
+    def __init__(self, name, address, fields=None, bit_width=8, read_only=False, volatile=True):
+        self.name = name
+        self.address = address
+        self.bit_width = bit_width
+        self.read_only = read_only
+        self.volatile = volatile
+        self.fields = {}
+
+        for field in fields:
+            self.fields[field.name] = field
+
+
+class BitField():
+    """Store information about a field or flag in an i2c register"""
+    def __init__(self, name, mask, adapter=None, bit_width=8, read_only=False):
+        self.name = name
+        self.mask = mask
+        self.adapter = adapter
+        self.bit_width = bit_width
+        self.read_only = read_only
+
+
+class BitFlag(BitField):
+    def __init__(self, name, bit, read_only=False):
+        BitField.__init__(self, name, 1 << bit, read_only)
+
+
 class Device(object):
-    def __init__(self, i2c_address, i2c_dev=None, bitwidth=8, registers=None):
-        self._bitwidth = bitwidth
+    def __init__(self, i2c_address, i2c_dev=None, bit_width=8, registers=None):
+        self._bit_width = bit_width
 
         self.registers = {}
 
@@ -152,7 +159,7 @@ class Device(object):
     def get_field(self, register, field):
         register = self.registers[register]
         field = register.fields[field]
-        value = self._i2c_read(register.address, register.bitwidth)
+        value = self._i2c_read(register.address, register.bit_width)
         value = (value & field.mask) >> _trailing_zeros(field.mask)
 
         if field.adapter is not None:
@@ -167,23 +174,23 @@ class Device(object):
         if field.adapter is not None:
             value = field.adapter._encode(value)
 
-        reg_value = self._i2c_read(register.address, register.bitwidth)
+        reg_value = self._i2c_read(register.address, register.bit_width)
         reg_value &= ~field.mask
         reg_value |= value << _trailing_zeros(field.mask)
-        self._i2c_write(register.address, reg_value, register.bitwidth)
+        self._i2c_write(register.address, reg_value, register.bit_width)
 
     def get_register(self, register):
         register = self.registers[register]
-        return self._i2c_read(register.address, register.bitwidth)
+        return self._i2c_read(register.address, register.bit_width)
 
-    def _i2c_write(self, register, value, bitwidth):
-        values = _int_to_bytes(value, bitwidth // self._bitwidth, 'big')
+    def _i2c_write(self, register, value, bit_width):
+        values = _int_to_bytes(value, bit_width // self._bit_width, 'big')
         values = list(values)
         self._i2c.write_i2c_block_data(self._i2c_address, register, values)
 
-    def _i2c_read(self, register, bitwidth):
+    def _i2c_read(self, register, bit_width):
         value = 0
-        for x in self._i2c.read_i2c_block_data(self._i2c_address, register, bitwidth // self._bitwidth):
+        for x in self._i2c.read_i2c_block_data(self._i2c_address, register, bit_width // self._bit_width):
             value <<= 8
             value |= x
         return value
@@ -191,31 +198,5 @@ class Device(object):
     def __getattribute__(self, name):
         attr = object.__getattribute__(self, name)
         if isinstance(attr, Register):
-            attr._value = self._read(attr.address, attr.bitwidth)
+            attr._value = self._read(attr.address, attr.bit_width)
         return attr
-
-class Register():
-    """Store information about an i2c register"""
-    def __init__(self, name, address, fields=None, bitwidth=8, read_only=False, volatile=True):
-        self.name = name
-        self.address = address
-        self.bitwidth = bitwidth
-        self.read_only = read_only
-        self.volatile = volatile
-        self.fields = {}
-
-        for field in fields:
-            self.fields[field.name] = field
-
-class BitField():
-    """Store information about a field or flag in an i2c register"""
-    def __init__(self, name, mask, adapter=None, bitwidth=8, read_only=False):
-        self.name = name
-        self.mask = mask
-        self.adapter = adapter
-        self.bitwidth = bitwidth
-        self.read_only = read_only
-
-class BitFlag(BitField):
-    def __init__(self, name, bit, read_only=False):
-        BitField.__init__(self, name, 1 << bit, read_only)
