@@ -87,6 +87,20 @@ class _RegisterProxy(object):
             return lambda value: self.device.set_field(self.register.name, name, value)
         return object.__getattribute__(self, name)
 
+    def write(self):
+        return self.device.write_register(self.register.name)
+
+    def read(self):
+        return self.device.read_register(self.register.name)
+
+    def __enter__(self):
+        self.device.read_register(self.register.name)
+        self.device.lock_register(self.register.name)
+        return self
+
+    def __exit__(self, exception_type, exception_value, exception_traceback):
+        self.device.unlock_register(self.register.name)
+
 
 class Register():
     """Store information about an i2c register"""
@@ -121,7 +135,9 @@ class Device(object):
     def __init__(self, i2c_address, i2c_dev=None, bit_width=8, registers=None):
         self._bit_width = bit_width
 
+        self.locked = {}
         self.registers = {}
+        self.values = {}
 
         if type(i2c_address) is list:
             self._i2c_addresses = i2c_address
@@ -137,8 +153,25 @@ class Device(object):
             self._i2c = smbus.SMBus(1)
 
         for register in registers:
+            self.locked[register.name] = False
+            self.values[register.name] = 0
             self.registers[register.name] = register
             self.__dict__[register.name] = _RegisterProxy(self, register)
+
+    def lock_register(self, name):
+        self.locked[name] = True
+
+    def unlock_register(self, name):
+        self.locked[name] = False
+
+    def read_register(self, name):
+        register = self.registers[name]
+        self.values[register.name] = self._i2c_read(register.address, register.bit_width)
+        return self.values[register.name]
+
+    def write_register(self, name):
+        register = self.registers[name]
+        return self._i2c_write(register.address, self.values[register.name], register.bit_width)
 
     def get_addresses(self):
         return self._i2c_addresses
@@ -159,8 +192,13 @@ class Device(object):
     def get_field(self, register, field):
         register = self.registers[register]
         field = register.fields[field]
-        value = self._i2c_read(register.address, register.bit_width)
-        value = (value & field.mask) >> _trailing_zeros(field.mask)
+
+        if not self.locked[register.name]:
+            self.read_register(register.name)
+
+        value = self.values[register.name]
+
+        value = (value & field.mask) >> _trailing_zeros(field.mask, register.bit_width)
 
         if field.adapter is not None:
             value = field.adapter._decode(value)
@@ -174,10 +212,20 @@ class Device(object):
         if field.adapter is not None:
             value = field.adapter._encode(value)
 
-        reg_value = self._i2c_read(register.address, register.bit_width)
+        if not self.locked[register.name]:
+            self.read_register(register.name)
+
+        #reg_value = self._i2c_read(register.address, register.bit_width)
+        reg_value = self.values[register.name]
+
         reg_value &= ~field.mask
-        reg_value |= value << _trailing_zeros(field.mask)
-        self._i2c_write(register.address, reg_value, register.bit_width)
+        reg_value |= value << _trailing_zeros(field.mask, register.bit_width)
+
+        self.values[register.name] = reg_value
+
+        #self._i2c_write(register.address, reg_value, register.bit_width)
+        if not self.locked[register.name]:
+            self.write_register(register.name)
 
     def get_register(self, register):
         register = self.registers[register]
