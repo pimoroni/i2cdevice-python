@@ -23,7 +23,7 @@ class LookupAdapter(Adapter):
         return list(self.lookup_table.keys())[index]
 
     def _encode(self, value):
-        if self.snap:
+        if self.snap and type(value) in [int, float, long]:
             value = min(list(self.lookup_table.keys()), key=lambda x:abs(x-value))
         return self.lookup_table[value]
 
