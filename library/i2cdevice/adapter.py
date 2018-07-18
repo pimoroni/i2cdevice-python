@@ -14,14 +14,17 @@ class LookupAdapter(Adapter):
     :param lookup_table: A dictionary of one or more key/value pairs where the key is the human-readable value and the value is the bitwise register value
 
     """
-    def __init__(self, lookup_table):
+    def __init__(self, lookup_table, snap=True):
         self.lookup_table = lookup_table
+        self.snap = snap
 
     def _decode(self, value):
         index = list(self.lookup_table.values()).index(value)
         return list(self.lookup_table.keys())[index]
 
     def _encode(self, value):
+        if self.snap:
+            value = min(list(self.lookup_table.keys()), key=lambda x:abs(x-value))
         return self.lookup_table[value]
 
 class U16ByteSwapAdapter(Adapter):
