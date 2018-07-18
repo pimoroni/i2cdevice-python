@@ -39,7 +39,7 @@ classifiers = ['Development Status :: 2 - Pre-Alpha',
 
 setup(
     name            = 'i2cdevice',
-    version         = '0.0.1',
+    version         = '0.0.2',
     author          = 'Philip Howard',
     author_email    = 'phil@pimoroni.com',
     description     = """Python DSL for interacting with SMBus-compatible i2c devices""",
@@ -49,5 +49,5 @@ setup(
     url             = 'http://www.pimoroni.com',
     classifiers     = classifiers,
     packages        = ['i2cdevice'],
-    install_requires= [ 'smbus' ]
+    install_requires= []
 )
