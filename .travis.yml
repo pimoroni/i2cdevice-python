@@ -20,3 +20,5 @@ install:
 script:
   - cd library
   - tox -vv
+
+after_success: if [ "$TOXENV" == "py35" ]; then coveralls; fi
