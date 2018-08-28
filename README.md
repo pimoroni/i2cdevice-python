@@ -1,6 +1,9 @@
 # i2cdevice
 
 [![Build Status](https://travis-ci.com/pimoroni/i2cdevice-python.svg?branch=master)](https://travis-ci.com/pimoroni/i2cdevice-python)
+[![Coverage Status](https://coveralls.io/repos/github/pimoroni/i2cdevice-python/badge.svg?branch=master)](https://coveralls.io/github/pimoroni/i2cdevice-python?branch=master)
+[![PyPi Package](https://img.shields.io/pypi/v/i2cdevice.svg)](https://pypi.python.org/pypi/i2cdevice)
+[![Python Versions](https://img.shields.io/pypi/pyversions/i2cdevice.svg)](https://pypi.python.org/pypi/i2cdevice)
 
 i2cdevice is a python domain-specific language aimed at dealing with common SMBus/i2c device interaction patterns.
 
