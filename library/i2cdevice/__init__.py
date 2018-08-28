@@ -1,10 +1,11 @@
 def _mask_width(value, bit_width=8):
     """Get the width of a bitwise mask
-    
+
     ie: 0b000111 = 3
     """
     value >>= _trailing_zeros(value, bit_width)
     return value.bit_length()
+
 
 def _leading_zeros(value, bit_width=8):
     """Count leading zeros on a binary number with a given bit_width
@@ -20,6 +21,7 @@ def _leading_zeros(value, bit_width=8):
         count += 1
         value <<= 1
     return count
+
 
 def _trailing_zeros(value, bit_width=8):
     """Count trailing zeros on a binary number with a given bit_width
@@ -40,7 +42,7 @@ def _trailing_zeros(value, bit_width=8):
 def _int_to_bytes(value, length, endianness='big'):
     try:
         return value.to_bytes(length, endianness)
-    except:
+    except AttributeError:
         output = bytearray()
         for x in range(length):
             offset = x * 8
@@ -50,20 +52,21 @@ def _int_to_bytes(value, length, endianness='big'):
             output.reverse()
         return output
 
+
 class MockSMBus:
     def __init__(self, i2c_bus):
         self.regs = [0 for _ in range(255)]
 
     def write_i2c_block_data(self, i2c_address, register, values):
-        self.regs[register:register+len(values)] = values
+        self.regs[register:register + len(values)] = values
 
     def read_i2c_block_data(self, i2c_address, register, length):
-        return self.regs[register:register+length]
+        return self.regs[register:register + length]
 
 
 class _RegisterProxy(object):
     """Register Proxy
-    
+
     This proxy catches lookups against non existent get_fieldname and set_fieldname methods
     and converts them into calls against the device's get_field and set_field methods with
     the appropriate options.
@@ -71,7 +74,7 @@ class _RegisterProxy(object):
     This means device.register.set_field(value) and device.register.get_field(value) will work
     and also transparently update the underlying device without the register or field objects
     having to know anything about how data is written/read/stored.
-    
+
     """
     def __init__(self, device, register):
         object.__init__(self)
@@ -145,7 +148,7 @@ class Device(object):
         else:
             self._i2c_addresses = [i2c_address]
             self._i2c_address = i2c_address
- 
+
         self._i2c = i2c_dev
 
         if self._i2c is None:
@@ -215,7 +218,7 @@ class Device(object):
         if not self.locked[register.name]:
             self.read_register(register.name)
 
-        #reg_value = self._i2c_read(register.address, register.bit_width)
+        # reg_value = self._i2c_read(register.address, register.bit_width)
         reg_value = self.values[register.name]
 
         reg_value &= ~field.mask
@@ -223,7 +226,7 @@ class Device(object):
 
         self.values[register.name] = reg_value
 
-        #self._i2c_write(register.address, reg_value, register.bit_width)
+        # self._i2c_write(register.address, reg_value, register.bit_width)
         if not self.locked[register.name]:
             self.write_register(register.name)
 

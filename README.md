@@ -1,5 +1,7 @@
 # i2cdevice
 
+[![Build Status](https://travis-ci.org/pimoroni/i2cdevice-python.svg?branch=master)](https://travis-ci.org/pimoroni/i2cdevice-python)
+
 i2cdevice is a python domain-specific language aimed at dealing with common SMBus/i2c device interaction patterns.
 
 This project aims to make group-up implementations of Python libraries for i2c devices easier, simpler and inherently self-documenting.

@@ -8,6 +8,7 @@ class Adapter:
     def _encode(self, value):
         raise NotImplementedError
 
+
 class LookupAdapter(Adapter):
     """Adaptor with a dictionary of values.
 
@@ -24,8 +25,9 @@ class LookupAdapter(Adapter):
 
     def _encode(self, value):
         if self.snap and type(value) in [int, float]:
-            value = min(list(self.lookup_table.keys()), key=lambda x:abs(x-value))
+            value = min(list(self.lookup_table.keys()), key=lambda x: abs(x - value))
         return self.lookup_table[value]
+
 
 class U16ByteSwapAdapter(Adapter):
     """Adaptor to swap the bytes in a 16bit integer."""

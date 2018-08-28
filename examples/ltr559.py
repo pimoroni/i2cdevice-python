@@ -1,10 +1,11 @@
 import time
 import sys
 sys.path.insert(0, "../library/")
-from i2cdevice import MockSMBus, Device, Register, BitField
+from i2cdevice import Device, Register, BitField
 from i2cdevice.adapter import Adapter, LookupAdapter, U16ByteSwapAdapter
 
 I2C_ADDR = 0x23
+
 
 class Bit12Adapter(Adapter):
     def _encode(self, value):
@@ -28,7 +29,7 @@ class Bit12Adapter(Adapter):
 ltr559 = Device(I2C_ADDR, bit_width=8, registers=(
 
     Register('ALS_CONTROL', 0x80, fields=(
-        BitField('gain', 0b00011100, adapter=LookupAdapter({1: 0b000, 2: 0b001, 4: 0b011, 8:0b011, 48:0b110, 96:0b111})),
+        BitField('gain', 0b00011100, adapter=LookupAdapter({1: 0b000, 2: 0b001, 4: 0b011, 8: 0b011, 48: 0b110, 96: 0b111})),
         BitField('sw_reset', 0b00000010),
         BitField('mode', 0b00000001)
     )),
@@ -45,7 +46,7 @@ ltr559 = Device(I2C_ADDR, bit_width=8, registers=(
     )),
 
     Register('PS_N_PULSES', 0x83, fields=(
-        BitField('count', 0b00001111),   
+        BitField('count', 0b00001111),
     )),
 
     Register('PS_MEAS_RATE', 0x84, fields=(
@@ -53,17 +54,17 @@ ltr559 = Device(I2C_ADDR, bit_width=8, registers=(
     )),
 
     Register('ALS_MEAS_RATE', 0x85, fields=(
-        BitField('integration_time_ms', 0b00111000, adapter=LookupAdapter({100: 0b000, 50: 0b001, 200: 0b010, 400: 0b011, 150: 0b100, 250: 0b101, 300: 0b110, 350: 0b111 })),
+        BitField('integration_time_ms', 0b00111000, adapter=LookupAdapter({100: 0b000, 50: 0b001, 200: 0b010, 400: 0b011, 150: 0b100, 250: 0b101, 300: 0b110, 350: 0b111})),
         BitField('repeat_rate_ms', 0b00000111, adapter=LookupAdapter({50: 0b000, 100: 0b001, 200: 0b010, 500: 0b011, 1000: 0b100, 2000: 0b101}))
     )),
 
     Register('PART_ID', 0x86, fields=(
-        BitField('part_number', 0b11110000), # Should be 0x09H
-        BitField('revision', 0b00001111) # Should be 0x02H
+        BitField('part_number', 0b11110000),  # Should be 0x09H
+        BitField('revision', 0b00001111)  # Should be 0x02H
     ), read_only=True, volatile=False),
 
     Register('MANUFACTURER_ID', 0x87, fields=(
-        BitField('manufacturer_id', 0b11111111), # Should be 0x05H
+        BitField('manufacturer_id', 0b11111111),  # Should be 0x05H
     ), read_only=True),
 
     # This will address 0x88, 0x89, 0x8A and 0x8B as a continuous 32bit register
@@ -75,10 +76,10 @@ ltr559 = Device(I2C_ADDR, bit_width=8, registers=(
     Register('ALS_PS_STATUS', 0x8C, fields=(
         BitField('als_data_valid', 0b10000000),
         BitField('als_gain', 0b01110000, adapter=LookupAdapter({1: 0b000, 2: 0b001, 4: 0b010, 8: 0b011, 48: 0b110, 96: 0b111})),
-        BitField('als_interrupt', 0b00001000), # True = Interrupt is active
-        BitField('als_data', 0b00000100), # True = New data available
-        BitField('ps_interrupt', 0b00000010), # True = Interrupt is active
-        BitField('ps_data', 0b00000001) # True = New data available
+        BitField('als_interrupt', 0b00001000),  # True = Interrupt is active
+        BitField('als_data', 0b00000100),  # True = New data available
+        BitField('ps_interrupt', 0b00000010),  # True = Interrupt is active
+        BitField('ps_data', 0b00000001)  # True = New data available
     ), read_only=True),
 
     # The PS data is actually an 11bit value but since B3 is reserved it'll (probably) read as 0
@@ -102,7 +103,7 @@ ltr559 = Device(I2C_ADDR, bit_width=8, registers=(
     # PS_OFFSET defines the measurement offset value to correct for proximity
     # offsets caused by device variations, crosstalk and other environmental factors.
     Register('PS_OFFSET', 0x94, fields=(
-        BitField('offset', 0x03FF), # Last two bits of 0x94, full 8 bits of 0x95
+        BitField('offset', 0x03FF),  # Last two bits of 0x94, full 8 bits of 0x95
     ), bit_width=16),
 
     # Defines the upper and lower limits of the ALS reading.
@@ -155,7 +156,6 @@ Soft Reset
     except KeyboardInterrupt:
         pass
 
-
     print("Setting ALS threshold")
     # Modifying the fields of this register without a "with" statement will trigger
     # two successive read/modify/write operations. Use "with" to optimise these out.
@@ -195,7 +195,7 @@ Activating sensor
         PS_LED.set_current_ma(50)
         PS_LED.set_duty_cycle(1.0)
         PS_LED.set_pulse_freq_khz(30)
-        PS_LED.write() # *MUST* be called to write the value when in context mode
+        PS_LED.write()  # *MUST* be called to write the value when in context mode
 
     ltr559.PS_N_PULSES.set_count(1)
 
@@ -239,7 +239,7 @@ Activating sensor
                 ratio = 1000
                 if als0 + als0 > 0:
                     ratio = (als0 * 1000) / (als1 + als0)
-        
+
                 ch_idx = 3
                 if ratio < 450:
                     ch_idx = 0
@@ -247,7 +247,7 @@ Activating sensor
                     ch_idx = 1
                 elif ratio < 850:
                     ch_idx = 2
-                
+
                 lux = ((als0 * ch0_c[ch_idx]) - (als1 * ch1_c[ch_idx])) / 10000
 
             print("Lux: {:06.2f}, Light CH0: {:04d}, Light CH1: {:04d}, Proximity: {:04d}  New Data LP: 0b{:01d}{:01d}".format(lux, als0, als1, ps0, als_int, ps_int))
