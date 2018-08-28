@@ -131,7 +131,7 @@ class BitField():
 
 class BitFlag(BitField):
     def __init__(self, name, bit, read_only=False):
-        BitField.__init__(self, name, 1 << bit, read_only)
+        BitField.__init__(self, name, 1 << bit, adapter=None, bit_width=8, read_only=read_only)
 
 
 class Device(object):
@@ -186,7 +186,7 @@ class Device(object):
         raise ValueError("Address {:02x} invalid!".format(address))
 
     def next_address(self):
-        next_addr = self._i2c_addresses.index(self._i2c_address) + 1
+        next_addr = self._i2c_addresses.index(self._i2c_address)
         next_addr += 1
         next_addr %= len(self._i2c_addresses)
         self._i2c_address = self._i2c_addresses[next_addr]
@@ -245,9 +245,3 @@ class Device(object):
             value <<= 8
             value |= x
         return value
-
-    def __getattribute__(self, name):
-        attr = object.__getattribute__(self, name)
-        if isinstance(attr, Register):
-            attr._value = self._read(attr.address, attr.bit_width)
-        return attr
