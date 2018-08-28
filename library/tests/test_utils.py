@@ -1,4 +1,5 @@
 from i2cdevice import _mask_width, _leading_zeros, _trailing_zeros, _int_to_bytes
+import pytest
 
 
 def test_mask_width():
@@ -12,14 +13,19 @@ def test_leading_zeros():
     assert _leading_zeros(0b1) == 7
     assert _leading_zeros(0b10) == 6
     assert _leading_zeros(0b100) == 5
+    assert _leading_zeros(0b100000000) == 8  # 9nth bit not counted by default
 
 
 def test_trailing_zeros():
     assert _trailing_zeros(0b1) == 0
     assert _trailing_zeros(0b10) == 1
     assert _trailing_zeros(0b100) == 2
+    assert _trailing_zeros(0b00000000) == 8  # Mask is all zeros
 
 
 def test_int_to_bytes():
     assert _int_to_bytes(512, 2) == b'\x02\x00'
     assert _int_to_bytes(512, 2, endianness='little') == b'\x00\x02'
+
+    with pytest.raises(TypeError):
+        _int_to_bytes('', 2)
