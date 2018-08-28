@@ -15,7 +15,7 @@ matrix:
       env: TOXENV=py27
 
 install:
-  - pip install --ignore-installed --upgrade setuptools pip tox
+  - pip install --ignore-installed --upgrade setuptools pip tox coveralls
 
 script:
   - cd library
