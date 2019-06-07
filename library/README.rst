@@ -42,6 +42,8 @@ Features
 Built With i2cdevice
 ====================
 
+-  bme280 - https://github.com/pimoroni/bme280-python
+-  bmp280 - https://github.com/pimoroni/bmp280-python
 -  bh1745 - https://github.com/pimoroni/bh1745-python
 -  as7262 - https://github.com/pimoroni/as7262-python
 -  lsm303d - https://github.com/pimoroni/lsm303d-python

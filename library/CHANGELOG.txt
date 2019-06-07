@@ -1,0 +1,24 @@
+0.0.5
+-----
+
+* Bump to stable release
+
+0.0.4
+-----
+
+* Bugfixes
+
+0.0.3
+-----
+
+* Added License
+
+0.0.2
+-----
+
+* Major Refactor
+
+0.0.1
+-----
+
+* Initial Release

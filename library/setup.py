@@ -27,7 +27,7 @@ try:
 except ImportError:
     from distutils.core import setup
 
-classifiers = ['Development Status :: 2 - Pre-Alpha',
+classifiers = ['Development Status :: 5 - Production/Stable',
                'Operating System :: POSIX :: Linux',
                'License :: OSI Approved :: MIT License',
                'Intended Audience :: Developers',
@@ -39,7 +39,7 @@ classifiers = ['Development Status :: 2 - Pre-Alpha',
 
 setup(
     name='i2cdevice',
-    version='0.0.4',
+    version='0.0.5',
     author='Philip Howard',
     author_email='phil@pimoroni.com',
     description="""Python DSL for interacting with SMBus-compatible i2c devices""",
@@ -47,6 +47,7 @@ setup(
     license='MIT',
     keywords='Raspberry Pi, SMBUS, i2c',
     url='http://www.pimoroni.com',
+    project_urls={'GitHub': 'https://www.github.com/pimoroni/i2cdevice-python'},
     classifiers=classifiers,
     packages=['i2cdevice'],
     install_requires=[]

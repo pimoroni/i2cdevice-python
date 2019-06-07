@@ -1,3 +1,5 @@
+__version__ = '0.0.5'
+
 def _mask_width(value, bit_width=8):
     """Get the width of a bitwise mask
 
