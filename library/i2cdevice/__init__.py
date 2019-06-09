@@ -213,6 +213,7 @@ class Device(object):
     def set_field(self, register, field, value):
         register = self.registers[register]
         field = register.fields[field]
+        shift = _trailing_zeros(field.mask, register.bit_width)
 
         if field.adapter is not None:
             value = field.adapter._encode(value)
@@ -220,15 +221,13 @@ class Device(object):
         if not self.locked[register.name]:
             self.read_register(register.name)
 
-        # reg_value = self._i2c_read(register.address, register.bit_width)
         reg_value = self.values[register.name]
 
         reg_value &= ~field.mask
-        reg_value |= value << _trailing_zeros(field.mask, register.bit_width)
+        reg_value |= (value << shift) & field.mask
 
         self.values[register.name] = reg_value
 
-        # self._i2c_write(register.address, reg_value, register.bit_width)
         if not self.locked[register.name]:
             self.write_register(register.name)
 

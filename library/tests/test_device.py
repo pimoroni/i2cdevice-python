@@ -68,6 +68,21 @@ def test_get_set_field():
     assert bus.regs[0] == 99
 
 
+def test_get_set_field_overflow():
+    bus = MockSMBus(1)
+    device = Device([0x00, 0x01], i2c_dev=bus, registers=(
+        Register('test', 0x00, fields=(
+            BitField('test', 0xFF),
+        )),
+    ))
+
+    device.set_field('test', 'test', 9999999)
+
+    assert device.get_field('test', 'test') == 127
+
+    assert bus.regs[0] == 127
+
+
 def test_bitflag():
     bus = MockSMBus(1)
     device = Device([0x00, 0x01], i2c_dev=bus, registers=(
