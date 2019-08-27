@@ -1,7 +1,7 @@
 import time
 import sys
 sys.path.insert(0, "../library/")
-from i2cdevice import Device, Register, BitField
+from i2cdevice import Device, Register, BitField, MockSMBus
 from i2cdevice.adapter import Adapter, LookupAdapter, U16ByteSwapAdapter
 
 I2C_ADDR = 0x23
@@ -26,7 +26,7 @@ class Bit12Adapter(Adapter):
         return ((value & 0xFF00) >> 8) | ((value & 0x000F) << 8)
 
 
-ltr559 = Device(I2C_ADDR, bit_width=8, registers=(
+ltr559 = Device(I2C_ADDR, i2c_dev=MockSMBus(0, default_registers={0x86: 0x92}), bit_width=8, registers=(
 
     Register('ALS_CONTROL', 0x80, fields=(
         BitField('gain', 0b00011100, adapter=LookupAdapter({1: 0b000, 2: 0b001, 4: 0b011, 8: 0b011, 48: 0b110, 96: 0b111})),
@@ -129,18 +129,20 @@ ltr559 = Device(I2C_ADDR, bit_width=8, registers=(
 
 
 if __name__ == "__main__":
-    with ltr559.PART_ID as PART_ID:
-        assert PART_ID.get_part_number() == 0x09
-        assert PART_ID.get_revision() == 0x02
+    with ltr559.get('PART_ID') as part_id:
+        assert part_id.part_number == 0x09
+        assert part_id.revision == 0x02
+
+    print(ltr559.get('PART_ID'))
 
     print("""
 Found LTR-559.
 Part ID: 0x{:02x}
 Revision: 0x{:02x}
     """.format(
-        ltr559.PART_ID.get_part_number(),
-        ltr559.PART_ID.get_revision())
-    )
+        ltr559.get('PART_ID').part_number,
+        ltr559.get('PART_ID').revision
+    ))
 
     print("""
 Soft Reset

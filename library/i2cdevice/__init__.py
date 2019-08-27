@@ -1,4 +1,7 @@
+from collections import namedtuple
+
 __version__ = '0.0.5'
+
 
 def _mask_width(value, bit_width=8):
     """Get the width of a bitwise mask
@@ -56,8 +59,11 @@ def _int_to_bytes(value, length, endianness='big'):
 
 
 class MockSMBus:
-    def __init__(self, i2c_bus):
+    def __init__(self, i2c_bus, default_registers=None):
         self.regs = [0 for _ in range(255)]
+        if default_registers is not None:
+            for index in default_registers.keys():
+                self.regs[index] = default_registers.get(index)
 
     def write_i2c_block_data(self, i2c_address, register, values):
         self.regs[register:register + len(values)] = values
@@ -115,10 +121,15 @@ class Register():
         self.bit_width = bit_width
         self.read_only = read_only
         self.volatile = volatile
+        self.is_read = False
         self.fields = {}
 
         for field in fields:
             self.fields[field.name] = field
+
+        self.namedtuple = namedtuple(self.name, sorted(self.fields))
+        self.namedtuple.__enter__ = lambda self: self
+        self.namedtuple.__exit__ = lambda self, type, value, traceback: None
 
 
 class BitField():
@@ -171,7 +182,9 @@ class Device(object):
 
     def read_register(self, name):
         register = self.registers[name]
-        self.values[register.name] = self._i2c_read(register.address, register.bit_width)
+        if register.volatile or not register.is_read:
+            self.values[register.name] = self._i2c_read(register.address, register.bit_width)
+            register.is_read = True
         return self.values[register.name]
 
     def write_register(self, name):
@@ -193,6 +206,27 @@ class Device(object):
         next_addr %= len(self._i2c_addresses)
         self._i2c_address = self._i2c_addresses[next_addr]
         return self._i2c_address
+
+    def set(self, register, **kwargs):
+        self.read_register(register)
+        self.lock_register(register)
+        for field in kwargs.keys():
+            value = kwargs.get(field)
+            self.set_field(register, field, value)
+        self.write_register(register)
+        self.unlock_register(register)
+
+    def get(self, register):
+        """Get a namedtuple containing register fields.
+
+        :param register: Name of register to retrieve
+
+        """
+        result = {}
+        self.read_register(register)
+        for field in self.registers[register].fields:
+            result[field] = self.get_field(register, field)
+        return self.registers[register].namedtuple(**result)
 
     def get_field(self, register, field):
         register = self.registers[register]
