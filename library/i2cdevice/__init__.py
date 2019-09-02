@@ -85,7 +85,6 @@ class _RegisterProxy(object):
 
     """
     def __init__(self, device, register):
-        object.__init__(self)
         self.device = device
         self.register = register
 
@@ -128,8 +127,6 @@ class Register():
             self.fields[field.name] = field
 
         self.namedtuple = namedtuple(self.name, sorted(self.fields))
-        self.namedtuple.__enter__ = lambda self: self
-        self.namedtuple.__exit__ = lambda self, type, value, traceback: None
 
 
 class BitField():

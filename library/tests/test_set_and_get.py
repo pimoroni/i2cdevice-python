@@ -25,9 +25,9 @@ def test_get_regs():
     ))
     device.set('test', test=0x66, monkey=0x77)
 
-    with device.get('test') as test:
-        assert test.test == 0x66
-        assert test.monkey == 0x77
+    reg = device.get('test')
+    reg.test == 0x66
+    reg.monkey == 0x77
 
     assert bus.regs[0] == 0x66
     assert bus.regs[1] == 0x77
