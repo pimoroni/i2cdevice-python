@@ -1,6 +1,6 @@
 from collections import namedtuple
 
-__version__ = '0.0.5'
+__version__ = '0.0.6'
 
 
 def _mask_width(value, bit_width=8):
@@ -208,6 +208,13 @@ class Device(object):
         return self._i2c_address
 
     def set(self, register, **kwargs):
+        """Write one or more fields on a device register.
+
+        Accepts multiple keyword arguments, one for each field to write.
+
+        :param register: Name of register to write.
+
+        """
         self.read_register(register)
         self.lock_register(register)
         for field in kwargs.keys():
