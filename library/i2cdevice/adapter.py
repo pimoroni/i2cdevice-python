@@ -20,8 +20,10 @@ class LookupAdapter(Adapter):
         self.snap = snap
 
     def _decode(self, value):
-        index = list(self.lookup_table.values()).index(value)
-        return list(self.lookup_table.keys())[index]
+        for k, v in self.lookup_table.items():
+            if v == value:
+                return k
+        raise ValueError("{} not in lookup table".format(value))
 
     def _encode(self, value):
         if self.snap and type(value) in [int, float]:

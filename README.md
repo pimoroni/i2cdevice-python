@@ -23,7 +23,8 @@ Checkout the libraries listed below for real-world examples.
 
 * Classes for describing devices, registers and individual bit fields within registers in a fashion which maps closely with the datasheet
 * Value translation from real world numbers (such as `512ms`) to register values (such as `0b111`) and back again
-* Automatic generation of accessors for every BitField- add a `mode` field and you'll get `get_mode` and `set_mode` methods on your Register.
+* Read registers into a namedtuple of fields using `get`
+* Write multiple register fields in a transaction using `set` with keyword arguments
 * Support for treating multiple-bytes as a single value, or single register with multiple values
 
 # Built With i2cdevice
@@ -71,3 +72,25 @@ ltr559 = Device(I2C_ADDR, bit_width=8, registers=(
 ))
 ```
 
+## Reading Registers
+
+One configured a register's fields can be read into a namedtuple using the `get` method:
+
+```python
+register_values = ltr559.get('ALS_CONTROL')
+gain = register_values.gain
+sw_reset = register_values.sw_reset
+mode = register_values.mode
+```
+
+## Writing Registers
+
+The namedtuple returned from `get` is immutable and does not attempt to map values back to the hardware, in order to write one or more fields to a register you must use `set` with a keyword argument for each field:
+
+```python
+ltr559.set('ALS_CONTROL',
+           gain=4,
+           sw_reset=1)
+```
+
+This will read the register state from the device, update the bitfields accordingly and write the result back.

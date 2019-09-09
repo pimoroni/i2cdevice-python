@@ -1,7 +1,7 @@
 import time
 import sys
 sys.path.insert(0, "../library/")
-from i2cdevice import Device, Register, BitField
+from i2cdevice import Device, Register, BitField, MockSMBus
 from i2cdevice.adapter import Adapter, LookupAdapter, U16ByteSwapAdapter
 
 I2C_ADDR = 0x23
@@ -26,7 +26,7 @@ class Bit12Adapter(Adapter):
         return ((value & 0xFF00) >> 8) | ((value & 0x000F) << 8)
 
 
-ltr559 = Device(I2C_ADDR, bit_width=8, registers=(
+ltr559 = Device(I2C_ADDR, i2c_dev=MockSMBus(0, default_registers={0x86: 0x92}), bit_width=8, registers=(
 
     Register('ALS_CONTROL', 0x80, fields=(
         BitField('gain', 0b00011100, adapter=LookupAdapter({1: 0b000, 2: 0b001, 4: 0b011, 8: 0b011, 48: 0b110, 96: 0b111})),
@@ -129,26 +129,28 @@ ltr559 = Device(I2C_ADDR, bit_width=8, registers=(
 
 
 if __name__ == "__main__":
-    with ltr559.PART_ID as PART_ID:
-        assert PART_ID.get_part_number() == 0x09
-        assert PART_ID.get_revision() == 0x02
+    part_id = ltr559.get('PART_ID')
+
+    assert part_id.part_number == 0x09
+    assert part_id.revision == 0x02
 
     print("""
 Found LTR-559.
 Part ID: 0x{:02x}
 Revision: 0x{:02x}
     """.format(
-        ltr559.PART_ID.get_part_number(),
-        ltr559.PART_ID.get_revision())
-    )
+        part_id.part_number,
+        part_id.revision
+    ))
 
     print("""
 Soft Reset
     """)
-    ltr559.ALS_CONTROL.set_sw_reset(1)
+    ltr559.set('ALS_CONTROL', sw_reset=1)
+    ltr559.set('ALS_CONTROL', sw_reset=0)
     try:
         while True:
-            status = ltr559.ALS_CONTROL.get_sw_reset()
+            status = ltr559.get('ALS_CONTROL').sw_reset
             print("Status: {}".format(status))
             if status == 0:
                 break
@@ -157,58 +159,69 @@ Soft Reset
         pass
 
     print("Setting ALS threshold")
-    # Modifying the fields of this register without a "with" statement will trigger
-    # two successive read/modify/write operations. Use "with" to optimise these out.
-    ltr559.ALS_THRESHOLD.set_lower(0x0001)
-    ltr559.ALS_THRESHOLD.set_upper(0xFFEE)
+
+    # The `set` method can handle writes to multiple register fields
+    # specify each field value as a keyword argument
+    ltr559.set('ALS_THRESHOLD',
+                lower=0x0001,
+                upper=0xFFEE)
+
     print("{:08x}".format(ltr559.values['ALS_THRESHOLD']))
-    with ltr559.ALS_THRESHOLD as ALS_THRESHOLD:
-        print("LOWER: ", ALS_THRESHOLD.get_lower())
-        assert ALS_THRESHOLD.get_lower() == 0x0001
-        assert ALS_THRESHOLD.get_upper() == 0xFFEE
+
+    # The `get` method returns register values as an immutable
+    # namedtuple, and fields will be available as properties
+    # You must use `set` to write a register.
+    als_threshold = ltr559.get('ALS_THRESHOLD')
+    assert als_threshold.lower == 0x0001
+    assert als_threshold.upper == 0xFFEE
 
     print("Setting PS threshold")
-    ltr559.PS_THRESHOLD.set_lower(0)
-    ltr559.PS_THRESHOLD.set_upper(500)
+
+    ltr559.set('PS_THRESHOLD',
+               lower=0,
+               upper=500)
+
     print("{:08x}".format(ltr559.values['PS_THRESHOLD']))
-    with ltr559.PS_THRESHOLD as PS_THRESHOLD:
-        assert PS_THRESHOLD.get_lower() == 0
-        assert PS_THRESHOLD.get_upper() == 500
+
+    ps_threshold = ltr559.get('PS_THRESHOLD')
+    assert ps_threshold.lower == 0
+    assert ps_threshold.upper == 500
 
     print("Setting integration time and repeat rate")
-    ltr559.PS_MEAS_RATE.set_rate_ms(100)
-    ltr559.ALS_MEAS_RATE.set_integration_time_ms(50)
-    ltr559.ALS_MEAS_RATE.set_repeat_rate_ms(50)
-    with ltr559.ALS_MEAS_RATE as ALS_MEAS_RATE:
-        assert ALS_MEAS_RATE.get_integration_time_ms() == 50
-        assert ALS_MEAS_RATE.get_repeat_rate_ms() == 50
+    ltr559.set('PS_MEAS_RATE', rate_ms=100)
+    ltr559.set('ALS_MEAS_RATE',
+                integration_time_ms=50,
+                repeat_rate_ms=50)
+    
+    als_meas_rate = ltr559.get('ALS_MEAS_RATE')
+    assert als_meas_rate.integration_time_ms == 50
+    assert als_meas_rate.repeat_rate_ms == 50
 
     print("""
 Activating sensor
     """)
 
-    ltr559.INTERRUPT.set_mode('als+ps')
-    ltr559.PS_CONTROL.set_active(True)
-    ltr559.PS_CONTROL.set_saturation_indicator_enable(1)
+    ltr559.set('INTERRUPT', mode='als+ps')
+    ltr559.set('PS_CONTROL',
+               active=True,
+               saturation_indicator_enable=1)
 
-    with ltr559.PS_LED as PS_LED:
-        PS_LED.set_current_ma(50)
-        PS_LED.set_duty_cycle(1.0)
-        PS_LED.set_pulse_freq_khz(30)
-        PS_LED.write()  # *MUST* be called to write the value when in context mode
+    ltr559.set('PS_LED',
+               current_ma=50,
+               duty_cycle=1.0,
+               pulse_freq_khz=30)
 
-    ltr559.PS_N_PULSES.set_count(1)
+    ltr559.set('PS_N_PULSES', count=1)
 
-    with ltr559.ALS_CONTROL as ALS_CONTROL:
-        ALS_CONTROL.set_mode(1)
-        ALS_CONTROL.set_gain(4)
-        ALS_CONTROL.write()
+    ltr559.set('ALS_CONTROL',
+               mode=1,
+               gain=4)
 
-    with ltr559.ALS_CONTROL as ALS_CONTROL:
-        assert ALS_CONTROL.get_mode() == 1
-        assert ALS_CONTROL.get_gain() == 4
+    als_control = ltr559.get('ALS_CONTROL')
+    assert als_control.mode == 1
+    assert als_control.gain == 4
 
-    ltr559.PS_OFFSET.set_offset(69)
+    ltr559.set('PS_OFFSET', offset=69)
 
     als0 = 0
     als1 = 0
@@ -220,21 +233,17 @@ Activating sensor
 
     try:
         while True:
-            # By default any read from a register field will trigger a read from hardware
-            # and any write to a register field will trigger a write to hardware.
-            # Using the "with" statement overrides this behavior by locking the register
-            # value during the with context so that its value is only read once on context entry.
-            with ltr559.ALS_PS_STATUS as ALS_PS_STATUS:
-                ps_int = ALS_PS_STATUS.get_ps_interrupt() or ALS_PS_STATUS.get_ps_data()
-                als_int = ALS_PS_STATUS.get_als_interrupt() or ALS_PS_STATUS.get_als_data()
+            als_ps_status = ltr559.get('ALS_PS_STATUS')
+            ps_int = als_ps_status.ps_interrupt or als_ps_status.ps_data
+            als_int = als_ps_status.als_interrupt or als_ps_status.als_data
 
             if ps_int:
-                ps0 = ltr559.PS_DATA.get_ch0()
+                ps0 = ltr559.get('PS_DATA').ch0
 
             if als_int:
-                with ltr559.ALS_DATA as ALS_DATA:
-                    als0 = ALS_DATA.get_ch0()
-                    als1 = ALS_DATA.get_ch1()
+                als_data = ltr559.get('ALS_DATA')
+                als0 = als_data.ch0
+                als1 = als_data.ch1
 
                 ratio = 1000
                 if als0 + als0 > 0:

@@ -39,7 +39,7 @@ classifiers = ['Development Status :: 5 - Production/Stable',
 
 setup(
     name='i2cdevice',
-    version='0.0.5',
+    version='0.0.6',
     author='Philip Howard',
     author_email='phil@pimoroni.com',
     description="""Python DSL for interacting with SMBus-compatible i2c devices""",
