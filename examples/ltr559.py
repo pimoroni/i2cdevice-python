@@ -192,7 +192,7 @@ Soft Reset
     ltr559.set('ALS_MEAS_RATE',
                 integration_time_ms=50,
                 repeat_rate_ms=50)
-    
+
     als_meas_rate = ltr559.get('ALS_MEAS_RATE')
     assert als_meas_rate.integration_time_ms == 50
     assert als_meas_rate.repeat_rate_ms == 50
