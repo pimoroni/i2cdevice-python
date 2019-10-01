@@ -244,7 +244,10 @@ class Device(object):
         value = (value & field.mask) >> _trailing_zeros(field.mask, register.bit_width)
 
         if field.adapter is not None:
-            value = field.adapter._decode(value)
+            try:
+                value = field.adapter._decode(value)
+            except ValueError as value_error:
+                raise ValueError("{}: {}".format(field.name, str(value_error)))
 
         return value
 
