@@ -1,4 +1,6 @@
 from i2cdevice import MockSMBus, Device, Register, BitField
+from i2cdevice.adapter import LookupAdapter
+import pytest
 
 
 def test_set_regs():
@@ -31,3 +33,17 @@ def test_get_regs():
 
     assert bus.regs[0] == 0x66
     assert bus.regs[1] == 0x77
+
+
+def test_field_name_in_adapter_error():
+    bus = MockSMBus(1)
+    device = Device(0x00, i2c_dev=bus, registers=(
+        Register('test', 0x00, fields=(
+            BitField('test', 0xFF00, adapter=LookupAdapter({'x': 1})),
+        ), bit_width=16),
+    ))
+
+    with pytest.raises(ValueError) as e:
+        reg = device.get('test')
+        assert 'test' in e
+        del reg
