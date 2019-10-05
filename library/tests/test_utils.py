@@ -26,6 +26,7 @@ def test_trailing_zeros():
 def test_int_to_bytes():
     assert _int_to_bytes(512, 2) == b'\x02\x00'
     assert _int_to_bytes(512, 2, endianness='little') == b'\x00\x02'
+    assert _int_to_bytes(512, 2, endianness='big') == b'\x02\x00'
 
     with pytest.raises(TypeError):
         _int_to_bytes('', 2)
