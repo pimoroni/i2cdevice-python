@@ -228,8 +228,10 @@ class Device(object):
         """
         result = {}
         self.read_register(register)
+        self.lock_register(register)
         for field in self.registers[register].fields:
             result[field] = self.get_field(register, field)
+        self.unlock_register(register)
         return self.registers[register].namedtuple(**result)
 
     def get_field(self, register, field):
