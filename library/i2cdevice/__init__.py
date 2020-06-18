@@ -123,6 +123,8 @@ class Register():
         self.is_read = False
         self.fields = {}
 
+        if fields is None:
+            fields = (BitField("value", 0xff), )
         for field in fields:
             self.fields[field.name] = field
 
