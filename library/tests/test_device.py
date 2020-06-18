@@ -14,7 +14,7 @@ def test_register_locking():
     device.test.set_test(77)
     device.lock_register('test')
 
-    bus.regs[0] = 11
+    bus.regs[0][0] = 11
     assert device.test.get_test() == 77
 
     device.unlock_register('test')
@@ -33,7 +33,7 @@ def test_adapters():
 
     assert device.adapter.get_test() == 0xFF00
 
-    assert bus.regs[0:2] == [0x00, 0xFF]
+    assert bus.regs[0][0:2] == [0x00, 0xFF]
 
 
 def test_address_select():
@@ -65,7 +65,7 @@ def test_get_set_field():
 
     assert device.get_field('test', 'test') == 99
 
-    assert bus.regs[0] == 99
+    assert bus.regs[0][0] == 99
 
 
 def test_get_set_field_overflow():
@@ -80,7 +80,7 @@ def test_get_set_field_overflow():
 
     assert device.get_field('test', 'test') == 127
 
-    assert bus.regs[0] == 127
+    assert bus.regs[0][0] == 127
 
 
 def test_bitflag():
@@ -93,16 +93,16 @@ def test_bitflag():
 
     device.test.set_test(True)
 
-    assert bus.regs[0] == 0b01000000
+    assert bus.regs[0][0] == 0b01000000
 
     device.test.set_test(False)
 
-    assert bus.regs[0] == 0b00000000
+    assert bus.regs[0][0] == 0b00000000
 
 
 def test_get_register():
     bus = MockSMBus(1)
-    bus.regs[0:3] = [0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF]
+    bus.regs[0][0:3] = [0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF]
     device = Device([0x00, 0x01], i2c_dev=bus, registers=(
         Register('test24', 0x00, fields=(
             BitField('test', 0xFFF),

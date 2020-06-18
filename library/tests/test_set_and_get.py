@@ -14,7 +14,7 @@ def test_set_regs():
 
     assert device.get('test').test == 123
 
-    assert bus.regs[0] == 123
+    assert bus.regs[0][0] == 123
 
 
 def test_get_regs():
@@ -31,8 +31,8 @@ def test_get_regs():
     reg.test == 0x66
     reg.monkey == 0x77
 
-    assert bus.regs[0] == 0x66
-    assert bus.regs[1] == 0x77
+    assert bus.regs[0][0] == 0x66
+    assert bus.regs[0][1] == 0x77
 
 
 def test_field_name_in_adapter_error():
