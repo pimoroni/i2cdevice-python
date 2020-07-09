@@ -1,6 +1,6 @@
 from collections import namedtuple
 
-__version__ = '0.0.6'
+__version__ = '0.0.7'
 
 
 def _mask_width(value, bit_width=8):

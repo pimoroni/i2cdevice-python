@@ -1,3 +1,9 @@
+0.0.7
+-----
+
+* BugFix: Prevent .get from reading multiple times (thanks @dkao)
+* Enhancement: Better error output (thanks Kamil Klimek)
+
 0.0.6
 -----
 
