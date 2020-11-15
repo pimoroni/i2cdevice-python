@@ -13,7 +13,7 @@ def test_register_proxy():
 
     assert device.test.get_test() == 123
 
-    assert bus.regs[0] == 123
+    assert bus.regs[0][0] == 123
 
     with device.test as test:
         test.set_test(77)
@@ -21,6 +21,6 @@ def test_register_proxy():
 
     assert device.test.get_test() == 77
 
-    assert bus.regs[0] == 77
+    assert bus.regs[0][0] == 77
 
     assert device.test.read() == 77
