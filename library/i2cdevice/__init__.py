@@ -59,17 +59,23 @@ def _int_to_bytes(value, length, endianness='big'):
 
 
 class MockSMBus:
-    def __init__(self, i2c_bus, default_registers=None):
-        self.regs = [0 for _ in range(255)]
+    def __init__(self, i2c_bus, default_registers=None, bank_select_register=None, banks=1):
+        self.regs = [[0 for register in range(255)] for bank in range(banks)]
+        self.bank_select_register = bank_select_register
+        self.bank = 0
         if default_registers is not None:
             for index in default_registers.keys():
-                self.regs[index] = default_registers.get(index)
+                self.regs[self.bank][index] = default_registers.get(index)
 
     def write_i2c_block_data(self, i2c_address, register, values):
-        self.regs[register:register + len(values)] = values
+        if len(values) == 1 and register == self.bank_select_register:
+            self.bank = values[0]
+            self.regs[0][0] = values[0]
+
+        self.regs[self.bank][register:register + len(values)] = values
 
     def read_i2c_block_data(self, i2c_address, register, length):
-        return self.regs[register:register + length]
+        return self.regs[self.bank][register:register + length]
 
 
 class _RegisterProxy(object):
@@ -114,15 +120,18 @@ class _RegisterProxy(object):
 
 class Register():
     """Store information about an i2c register"""
-    def __init__(self, name, address, fields=None, bit_width=8, read_only=False, volatile=True):
+    def __init__(self, name, address, fields=None, bit_width=8, read_only=False, volatile=True, bank=0):
         self.name = name
         self.address = address
         self.bit_width = bit_width
         self.read_only = read_only
         self.volatile = volatile
+        self.bank = bank
         self.is_read = False
         self.fields = {}
 
+        if fields is None:
+            fields = (BitField("value", 0xff), )
         for field in fields:
             self.fields[field.name] = field
 
@@ -140,14 +149,17 @@ class BitField():
 
 
 class BitFlag(BitField):
+    """Alias for BitField that stores information about a single flag"""
     def __init__(self, name, bit, read_only=False):
         BitField.__init__(self, name, 1 << bit, adapter=None, bit_width=8, read_only=read_only)
 
 
 class Device(object):
-    def __init__(self, i2c_address, i2c_dev=None, bit_width=8, registers=None):
+    def __init__(self, i2c_address, i2c_dev=None, bit_width=8, registers=None, bank_select=None):
         self._bit_width = bit_width
 
+        self.bank = 0
+        self.bank_select = bank_select
         self.locked = {}
         self.registers = {}
         self.values = {}
@@ -171,6 +183,10 @@ class Device(object):
             self.registers[register.name] = register
             self.__dict__[register.name] = _RegisterProxy(self, register)
 
+    def change_bank(self, bank):
+        self._i2c_write(self.bank_select.address, bank, self.bank_select.bit_width)
+        self.bank = bank
+
     def lock_register(self, name):
         self.locked[name] = True
 
@@ -179,6 +195,8 @@ class Device(object):
 
     def read_register(self, name):
         register = self.registers[name]
+        if self.bank_select:
+            self.change_bank(register.bank)
         if register.volatile or not register.is_read:
             self.values[register.name] = self._i2c_read(register.address, register.bit_width)
             register.is_read = True
@@ -186,6 +204,8 @@ class Device(object):
 
     def write_register(self, name):
         register = self.registers[name]
+        if self.bank_select:
+            self.change_bank(register.bank)
         return self._i2c_write(register.address, self.values[register.name], register.bit_width)
 
     def get_addresses(self):
