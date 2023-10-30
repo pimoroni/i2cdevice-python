@@ -162,8 +162,8 @@ class Device(object):
         self._i2c = i2c_dev
 
         if self._i2c is None:
-            import smbus
-            self._i2c = smbus.SMBus(1)
+            import smbus2
+            self._i2c = smbus2.SMBus(1)
 
         for register in registers:
             self.locked[register.name] = False
