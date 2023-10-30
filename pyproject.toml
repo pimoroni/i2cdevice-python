@@ -5,7 +5,7 @@ build-backend = "hatchling.build"
 [project]
 name = "i2cdevice"
 dynamic = ["version", "readme"]
-description = "Python DSL for interacting with SMBus-compatible i2c devices"
+description = "Python framework for interacting with SMBus-compatible i2c devices"
 license = {file = "LICENSE"}
 requires-python = ">= 3.7"
 authors = [
