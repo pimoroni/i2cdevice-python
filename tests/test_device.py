@@ -1,6 +1,7 @@
-from i2cdevice import MockSMBus, Device, Register, BitField, BitFlag
-from i2cdevice.adapter import U16ByteSwapAdapter
 import pytest
+
+from i2cdevice import BitField, BitFlag, Device, MockSMBus, Register
+from i2cdevice.adapter import U16ByteSwapAdapter
 
 
 def test_register_locking():

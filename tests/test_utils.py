@@ -1,5 +1,6 @@
-from i2cdevice import _mask_width, _leading_zeros, _trailing_zeros, _int_to_bytes
 import pytest
+
+from i2cdevice import _int_to_bytes, _leading_zeros, _mask_width, _trailing_zeros
 
 
 def test_mask_width():

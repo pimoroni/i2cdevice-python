@@ -1,4 +1,4 @@
-from i2cdevice import MockSMBus, Device, Register, BitField
+from i2cdevice import BitField, Device, MockSMBus, Register
 
 
 def test_register_proxy():

@@ -1,5 +1,6 @@
-from i2cdevice import MockSMBus, Device, Register, BitField
 import sys
+
+from i2cdevice import BitField, Device, MockSMBus, Register
 
 
 class SMBus():

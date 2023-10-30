@@ -1,5 +1,6 @@
-from i2cdevice.adapter import Adapter, LookupAdapter, U16ByteSwapAdapter
 import pytest
+
+from i2cdevice.adapter import Adapter, LookupAdapter, U16ByteSwapAdapter
 
 
 def test_adaptor_class():
