@@ -1,4 +1,0 @@
-[run]
-source = i2cdevice
-omit =
-    .tox/*

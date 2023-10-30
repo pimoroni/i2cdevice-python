@@ -1,6 +1,6 @@
 from collections import namedtuple
 
-__version__ = '0.0.7'
+__version__ = "1.0.0"
 
 
 def _mask_width(value, bit_width=8):
@@ -152,7 +152,7 @@ class Device(object):
         self.registers = {}
         self.values = {}
 
-        if type(i2c_address) is list:
+        if isinstance(i2c_address, list):
             self._i2c_addresses = i2c_address
             self._i2c_address = i2c_address[0]
         else:
@@ -162,8 +162,8 @@ class Device(object):
         self._i2c = i2c_dev
 
         if self._i2c is None:
-            import smbus
-            self._i2c = smbus.SMBus(1)
+            import smbus2
+            self._i2c = smbus2.SMBus(1)
 
         for register in registers:
             self.locked[register.name] = False

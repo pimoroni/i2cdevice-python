@@ -1,6 +1,7 @@
-from i2cdevice import MockSMBus, Device, Register, BitField
-from i2cdevice.adapter import LookupAdapter
 import pytest
+
+from i2cdevice import BitField, Device, MockSMBus, Register
+from i2cdevice.adapter import LookupAdapter
 
 
 def test_set_regs():

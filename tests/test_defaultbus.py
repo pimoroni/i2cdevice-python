@@ -1,5 +1,6 @@
-from i2cdevice import MockSMBus, Device, Register, BitField
 import sys
+
+from i2cdevice import BitField, Device, MockSMBus, Register
 
 
 class SMBus():
@@ -7,7 +8,7 @@ class SMBus():
 
 
 def test_smbus_io():
-    sys.modules['smbus'] = SMBus
+    sys.modules['smbus2'] = SMBus
     device = Device(0x00, i2c_dev=None, registers=(
         Register('test', 0x00, fields=(
             BitField('test', 0xFF),

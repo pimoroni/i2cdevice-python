@@ -1,3 +1,9 @@
+1.0.0
+-----
+
+* Enhancement: Repackage to pyproject.toml/hatchling
+* Switch i2c_dev fallback from smbus to smbus2
+
 0.0.7
 -----
 

@@ -5,11 +5,11 @@
 [![PyPi Package](https://img.shields.io/pypi/v/i2cdevice.svg)](https://pypi.python.org/pypi/i2cdevice)
 [![Python Versions](https://img.shields.io/pypi/pyversions/i2cdevice.svg)](https://pypi.python.org/pypi/i2cdevice)
 
-i2cdevice is a python domain-specific language aimed at dealing with common SMBus/i2c device interaction patterns.
+i2cdevice is a Python framework aimed at dealing with common SMBus/i2c device interaction patterns.
 
 This project aims to make group-up implementations of Python libraries for i2c devices easier, simpler and inherently self-documenting.
 
-It does this by separating a detailed description of the hardware registers and how they should be manipulated into a stuctured definition language.
+It does this by separating a detailed description of the hardware registers and how they should be manipulated into a structured definition language.
 
 This project does not aim to help you make a public API for Python devices- that should be built on top of the fundamentals presented here.
 
@@ -17,7 +17,7 @@ This project does not aim to help you make a public API for Python devices- that
 
 You should generally aim for a 1:1 representation of the hardware registers in the device you're implementing, even if you don't plan to use all the functionality. Having the full register set implemented allows for the easy addition of new features in future.
 
-Checkout the libraries listed below for real-world examples.
+Check out the libraries listed below for real-world examples.
 
 # Features
 
@@ -35,6 +35,7 @@ Checkout the libraries listed below for real-world examples.
 * as7262 - https://github.com/pimoroni/as7262-python
 * lsm303d - https://github.com/pimoroni/lsm303d-python
 * ltr559 - https://github.com/pimoroni/ltr559-python
+* ads1015 - https://github.com/pimoroni/ads1015-python
 
 # Examples
 
@@ -62,7 +63,7 @@ ALS_DATA = Register('ALS_DATA', 0x88, fields=(
 ), read_only=True, bitwidth=32)
 ```
 
-A "Register" and its "BitField"s define a set of rules and logic for detailing with the hardware register which is intepreted by the device class. Registers are declared on a device using the `registers=()` keyword argument:
+A "Register" and its "BitField"s define a set of rules and logic for detailing with the hardware register which is interpreted by the device class. Registers are declared on a device using the `registers=()` keyword argument:
 
 ```python
 I2C_ADDR = 0x23
