@@ -9,7 +9,7 @@ i2cdevice is a python domain-specific language aimed at dealing with common SMBu
 
 This project aims to make group-up implementations of Python libraries for i2c devices easier, simpler and inherently self-documenting.
 
-It does this by separating a detailed description of the hardware registers and how they should be manipulated into a stuctured definition language.
+It does this by separating a detailed description of the hardware registers and how they should be manipulated into a structured definition language.
 
 This project does not aim to help you make a public API for Python devices- that should be built on top of the fundamentals presented here.
 
@@ -62,7 +62,7 @@ ALS_DATA = Register('ALS_DATA', 0x88, fields=(
 ), read_only=True, bitwidth=32)
 ```
 
-A "Register" and its "BitField"s define a set of rules and logic for detailing with the hardware register which is intepreted by the device class. Registers are declared on a device using the `registers=()` keyword argument:
+A "Register" and its "BitField"s define a set of rules and logic for detailing with the hardware register which is interpreted by the device class. Registers are declared on a device using the `registers=()` keyword argument:
 
 ```python
 I2C_ADDR = 0x23

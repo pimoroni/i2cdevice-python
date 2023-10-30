@@ -107,7 +107,7 @@ ltr559 = Device(I2C_ADDR, i2c_dev=MockSMBus(0, default_registers={0x86: 0x92}), 
         BitField('offset', 0x03FF),  # Last two bits of 0x94, full 8 bits of 0x95
     ), bit_width=16),
 
-    # Defines the upper and lower limits of the ALS reading.
+    # Defines the upper and lower limits of the "ALS" reading.
     # An interrupt is triggered if values fall outside of this range.
     # See also INTERRUPT_PERSIST.
     Register('ALS_THRESHOLD', 0x97, fields=(
@@ -118,7 +118,7 @@ ltr559 = Device(I2C_ADDR, i2c_dev=MockSMBus(0, default_registers={0x86: 0x92}), 
     # This register controls how many values must fall outside of the range defined
     # by upper and lower threshold limits before the interrupt is asserted.
 
-    # In the case of both PS and ALS, a 0 value indicates that every value outside
+    # In the case of both "PS" and "ALS", a 0 value indicates that every value outside
     # the threshold range should be counted.
     # Values therein map to n+1 , ie: 0b0001 requires two consecutive values.
     Register('INTERRUPT_PERSIST', 0x9E, fields=(
@@ -159,7 +159,7 @@ Soft Reset
     except KeyboardInterrupt:
         pass
 
-    print("Setting ALS threshold")
+    print("Setting light sensor threshold")
 
     # The `set` method can handle writes to multiple register fields
     # specify each field value as a keyword argument

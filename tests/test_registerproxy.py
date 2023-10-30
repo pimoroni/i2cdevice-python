@@ -2,7 +2,7 @@ from i2cdevice import BitField, Device, MockSMBus, Register
 
 
 def test_register_proxy():
-    """This API pattern has been depricated in favour of set/get."""
+    """This API pattern has been deprecated in favour of set/get."""
     bus = MockSMBus(1)
     device = Device(0x00, i2c_dev=bus, registers=(
         Register('test', 0x00, fields=(
