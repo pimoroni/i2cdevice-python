@@ -1,9 +1,9 @@
 import sys
 import time
 
-sys.path.insert(0, "../library/")
-from i2cdevice import BitField, Device, MockSMBus, Register
-from i2cdevice.adapter import Adapter, LookupAdapter, U16ByteSwapAdapter
+sys.path.insert(0, "../")
+from i2cdevice import BitField, Device, MockSMBus, Register  # noqa: E402
+from i2cdevice.adapter import Adapter, LookupAdapter, U16ByteSwapAdapter  # noqa: E402
 
 I2C_ADDR = 0x23
 
